@@ -1,7 +1,7 @@
-package lilylicious.chunksaver.chunk;
+package lilylicious.staticchunkmanager.chunk;
 
 
-import lilylicious.chunksaver.util.csLogger;
+import lilylicious.staticchunkmanager.util.csLogger;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
@@ -11,7 +11,6 @@ import net.minecraft.world.chunk.storage.RegionFile;
 import java.awt.*;
 import java.io.DataInputStream;
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 

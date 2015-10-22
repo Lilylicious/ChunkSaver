@@ -1,17 +1,11 @@
-package lilylicious.chunksaver.chunk;
+package lilylicious.staticchunkmanager.chunk;
 
-import lilylicious.chunksaver.util.NBTHelper;
-import lilylicious.chunksaver.util.csLogger;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
+import lilylicious.staticchunkmanager.util.NBTHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.NibbleArray;
-import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraft.world.gen.ChunkProviderGenerate;
 
 import java.awt.*;
-import java.util.List;
 
 public class csChunkProvider extends ChunkProviderGenerate {
 

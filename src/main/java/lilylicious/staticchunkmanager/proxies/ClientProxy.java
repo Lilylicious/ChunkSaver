@@ -1,4 +1,4 @@
-package lilylicious.chunksaver.proxies;
+package lilylicious.staticchunkmanager.proxies;
 
 import cpw.mods.fml.client.FMLClientHandler;
 import net.minecraft.entity.player.EntityPlayer;

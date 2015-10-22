@@ -1,4 +1,4 @@
-package lilylicious.chunksaver.proxies;
+package lilylicious.staticchunkmanager.proxies;
 
 import net.minecraft.entity.player.EntityPlayer;
 

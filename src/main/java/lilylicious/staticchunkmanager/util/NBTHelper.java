@@ -1,6 +1,6 @@
-package lilylicious.chunksaver.util;
+package lilylicious.staticchunkmanager.util;
 
-import lilylicious.chunksaver.chunk.Chunks;
+import lilylicious.staticchunkmanager.chunk.Chunks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;
@@ -135,9 +135,9 @@ public class NBTHelper {
         int maxCount = 0;
 
         for (Map.Entry entry : byteMap.entrySet()) {
-            if ((int) entry.getValue() > maxCount) {
+            if (entry.getValue() != null && (Integer) entry.getValue() > maxCount) {
                 mostFrequent = (Byte)entry.getKey();
-                maxCount = (int) entry.getValue();                
+                maxCount = (Integer) entry.getValue();                
             }
         }
         

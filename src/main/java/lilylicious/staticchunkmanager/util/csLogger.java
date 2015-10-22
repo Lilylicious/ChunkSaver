@@ -1,12 +1,12 @@
-package lilylicious.chunksaver.util;
+package lilylicious.staticchunkmanager.util;
 
-import lilylicious.chunksaver.ChunkSaverCore;
+import lilylicious.staticchunkmanager.StaticChunkManagerCore;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public final class csLogger {
-    private static Logger logger = LogManager.getLogger(ChunkSaverCore.MODID);
+    private static Logger logger = LogManager.getLogger(StaticChunkManagerCore.MODID);
 
     public static void log(Level level, String msg) {
         logger.log(level, msg);

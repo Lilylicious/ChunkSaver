@@ -1,7 +1,7 @@
-package lilylicious.chunksaver.commands;
+package lilylicious.staticchunkmanager.commands;
 
-import lilylicious.chunksaver.chunk.Chunks;
-import lilylicious.chunksaver.util.csLogger;
+import lilylicious.staticchunkmanager.chunk.Chunks;
+import lilylicious.staticchunkmanager.util.csLogger;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
@@ -9,14 +9,10 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.ChunkCoordinates;
-import net.minecraft.util.IProgressUpdate;
-import net.minecraft.world.MinecraftException;
-import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.chunk.storage.RegionFile;
 
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;

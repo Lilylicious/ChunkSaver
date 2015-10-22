@@ -1,4 +1,4 @@
-package lilylicious.chunksaver;
+package lilylicious.staticchunkmanager;
 
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
@@ -7,27 +7,24 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
-import lilylicious.chunksaver.api.csAPI;
-import lilylicious.chunksaver.commands.ChunkSaveCommand;
-import lilylicious.chunksaver.proxies.IProxy;
-import lilylicious.chunksaver.world.csWorldType;
+import lilylicious.staticchunkmanager.commands.ChunkSaveCommand;
+import lilylicious.staticchunkmanager.proxies.IProxy;
+import lilylicious.staticchunkmanager.world.csWorldType;
 import net.minecraft.world.WorldType;
 
-import java.io.File;
-
-@Mod(modid = ChunkSaverCore.MODID, name = ChunkSaverCore.MODNAME, version = ChunkSaverCore.VERSION)
-public class ChunkSaverCore
+@Mod(modid = StaticChunkManagerCore.MODID, name = StaticChunkManagerCore.MODNAME, version = StaticChunkManagerCore.VERSION)
+public class StaticChunkManagerCore
 {
-    public static final String MODID = "chunksaver";
-    public static final String MODNAME = "Chunk Saver";
+    public static final String MODID = "staticchunkmanager";
+    public static final String MODNAME = "Static Chunk Manager";
     public static final String VERSION = "@VERSION@";
 
     public static WorldType csWorldType;
 
     @Mod.Instance(MODID)
-    public static ChunkSaverCore instance;
+    public static StaticChunkManagerCore instance;
 
-    @SidedProxy(clientSide = "lilylicious.chunksaver.proxies.ClientProxy", serverSide = "lilylicious.chunksaver.proxies.ServerProxy")
+    @SidedProxy(clientSide = "lilylicious.staticchunkmanager.proxies.ClientProxy", serverSide = "lilylicious.staticchunkmanager.proxies.ServerProxy")
     public static IProxy proxy;
     
     @EventHandler

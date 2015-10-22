@@ -19,23 +19,22 @@ apply plugin: 'forge'
 apply plugin: 'idea'
 apply plugin: 'java'
 
-version = "${minecraft_version}-${chunksaver_version}"
+version = "${minecraft_version}-${staticchunkmanager_version}"
 group= "java.lilylicious" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "ChunkSaver"
+archivesBaseName = "StaticChunkManager"
 
 minecraft {
     version = "${minecraft_version}-${forge_version}-${minecraft_version}"
     runDir = "eclipse"
 
     replace "@VERSION@", project.version
-    replaceIn "ChunkSaverCore.java"
+    replaceIn "StaticChunkManagerCore.java"
 }
 
 dependencies {
     compile "codechicken:CodeChickenCore:1.7.10-1.0.4.29:dev"
     compile "codechicken:CodeChickenLib:1.7.10-1.1.1.110:dev"
     compile "codechicken:NotEnoughItems:1.7.10-1.0.4.83:dev"
-    compile "com.evilco.mc:nbt:1.0.2"
     
     // Adds all local libs dependencies in the libs folder
     compile fileTree(dir: 'libs', include: ['*.jar'])
@@ -49,10 +48,6 @@ repositories {
     maven { //NEI Repo
         name 'CB Repo'
         url "http://chickenbones.net/maven/"
-    }
-    maven {
-        name 'NBT-Lib'
-        url "http://basket.cindyscats.com/content/repositories/releases/"
     }
 }
 

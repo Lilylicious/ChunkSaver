@@ -1,4 +1,4 @@
-package lilylicious.chunksaver.world;
+package lilylicious.staticchunkmanager.world;
 
 import net.minecraft.world.WorldType;
 import net.minecraftforge.common.DimensionManager;

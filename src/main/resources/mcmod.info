@@ -1,7 +1,7 @@
 [
 {
-  "modid": "chunksaver",
-  "name": "Chunk Saver",
+  "modid": "staticchunkmanager",
+  "name": "Static Chunk Manager",
   "description": "Move chunks around.",
   "version": "${version}",
   "mcversion": "${mcversion}",

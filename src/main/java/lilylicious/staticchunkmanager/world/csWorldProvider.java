@@ -1,6 +1,6 @@
-package lilylicious.chunksaver.world;
+package lilylicious.staticchunkmanager.world;
 
-import lilylicious.chunksaver.chunk.csChunkProvider;
+import lilylicious.staticchunkmanager.chunk.csChunkProvider;
 import net.minecraft.world.WorldProviderSurface;
 import net.minecraft.world.chunk.IChunkProvider;
 
