@@ -5,6 +5,7 @@
   "description": "Move chunks around.",
   "version": "${version}",
   "mcversion": "${mcversion}",
+  "logoFile": "assets/staticchunkmanager/logo.png",
   "url": "",
   "updateUrl": "",
   "authorList": ["Lilylicious"],
