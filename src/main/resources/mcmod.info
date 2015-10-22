@@ -1,0 +1,16 @@
+[
+{
+  "modid": "chunksaver",
+  "name": "Chunk Saver",
+  "description": "Move chunks around.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Lilylicious"],
+  "credits": "sinkillerj for the idea",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
