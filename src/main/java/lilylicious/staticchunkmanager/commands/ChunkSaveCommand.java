@@ -1,6 +1,7 @@
 package lilylicious.staticchunkmanager.commands;
 
 import lilylicious.staticchunkmanager.chunk.Chunks;
+import lilylicious.staticchunkmanager.util.MathUtils;
 import lilylicious.staticchunkmanager.util.csLogger;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.ICommand;
@@ -57,10 +58,10 @@ public class ChunkSaveCommand implements ICommand {
 
         int blockX = coords.posX;
         int blockZ = coords.posZ;
-        int chunkX = Math.floorDiv(blockX, 16);
-        int chunkZ = Math.floorDiv(blockZ, 16);
-        int regionX = Math.floorDiv(chunkX, 32);
-        int regionZ = Math.floorDiv(chunkZ, 32);
+        int chunkX = MathUtils.floorDiv(blockX, 16);
+        int chunkZ = MathUtils.floorDiv(blockZ, 16);
+        int regionX = MathUtils.floorDiv(chunkX, 32);
+        int regionZ = MathUtils.floorDiv(chunkZ, 32);
         File worldFolder = new File("saves\\" + intServ.getFolderName());
         RegionFile region = new RegionFile(new File(worldFolder, "\\region\\r." + regionX + "." + regionZ + ".mca"));
 

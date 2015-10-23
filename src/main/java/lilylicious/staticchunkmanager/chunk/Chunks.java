@@ -1,6 +1,7 @@
 package lilylicious.staticchunkmanager.chunk;
 
 
+import lilylicious.staticchunkmanager.util.MathUtils;
 import lilylicious.staticchunkmanager.util.csLogger;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompressedStreamTools;
@@ -44,8 +45,8 @@ public class Chunks {
     public static NBTTagCompound chunkData(int cx, int cy) {
         NBTTagCompound chunkNBT = null;
 
-        int regionX = Math.floorDiv(cx, 32);
-        int regionZ = Math.floorDiv(cy, 32);
+        int regionX = MathUtils.floorDiv(cx, 32);
+        int regionZ = MathUtils.floorDiv(cy, 32);
 
         IntegratedServer intServ = Minecraft.getMinecraft().getIntegratedServer();
 
