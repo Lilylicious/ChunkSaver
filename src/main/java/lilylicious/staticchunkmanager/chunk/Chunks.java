@@ -17,29 +17,10 @@ import java.util.Map;
 
 public class Chunks {
 
-    public static Map<Point, NBTTagCompound> chunkMap = new HashMap();
+    public static Map<Point, ChunkRequest> chunkMap = new HashMap();
 
-    public static void addChunk(File file, int cx, int cy) {
-        NBTTagCompound nbt = null;
-        boolean missingData = false;
-
-        try {
-            nbt = CompressedStreamTools.read(file);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        if (!nbt.hasKey("Level", 10)) {
-            csLogger.logWarn("Chunk file at " + cx + "," + cy + " is missing level data, skipping");
-            missingData = true;
-        } else if (!nbt.getCompoundTag("Level").hasKey("Sections", 9)) {
-            csLogger.logWarn("Chunk file at " + cx + "," + cy + " is missing block data, skipping");
-            missingData = true;
-        }
-
-        if (nbt != null && !missingData) {
-            chunkMap.put(new Point(cx, cy), nbt);
-        }
+    public static void addChunk(ChunkRequest cReq) {
+        chunkMap.put(new Point(cReq.cx, cReq.cy), cReq);
     }
 
     public static NBTTagCompound chunkData(int cx, int cy) {
@@ -57,7 +38,7 @@ public class Chunks {
             // chunkX - regionX*32
             DataInputStream datainputstream = region.getChunkDataInputStream(cx - (regionX * 32), cy - (regionZ * 32));
             if (datainputstream == null) {
-                csLogger.logWarn("Failed to fetch input stream");
+                csLogger.logWarn("Failed to fetch input stream, make sure the chunks are saved");
             } else {
                 chunkNBT = CompressedStreamTools.read(datainputstream);
             }
@@ -68,6 +49,4 @@ public class Chunks {
 
         return chunkNBT;
     }
-
-
 }

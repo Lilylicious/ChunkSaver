@@ -1,11 +1,11 @@
 package lilylicious.staticchunkmanager.chunk;
 
-import lilylicious.staticchunkmanager.util.NBTHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.ChunkProviderGenerate;
 
 import java.awt.*;
+import java.io.IOException;
 
 public class csChunkProvider extends ChunkProviderGenerate {
 
@@ -25,19 +25,27 @@ public class csChunkProvider extends ChunkProviderGenerate {
     @Override
     public Chunk provideChunk(int chunkX, int chunkZ) {
         Chunk chunk = null;
+        Chunk normalChunk = super.provideChunk(chunkX, chunkZ);
         Point key = new Point(chunkX, chunkZ);
 
-        if (Chunks.chunkMap.containsKey(key)) {
-            chunk = NBTHelper.checkedReadChunkFromNBT__Async(this.worldObj, chunkX, chunkZ, Chunks.chunkMap.get(key));
+        try {
+            if (Chunks.chunkMap.containsKey(key)) {
+                chunk = Chunks.chunkMap.get(key).readChunk(this.worldObj, normalChunk);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         if (chunk != null) {
             return chunk;
         } else {
-            return super.provideChunk(chunkX, chunkZ);
+            return normalChunk;
         }
     }
-    
 
-    
+    public Chunk requestNormal(int cx, int cy) {
+        return super.provideChunk(cx, cy);
+    }
+
+
 }

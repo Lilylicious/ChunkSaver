@@ -10,11 +10,16 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.ChunkCoordinates;
+import net.minecraft.util.IProgressUpdate;
+import net.minecraft.world.MinecraftException;
+import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.chunk.storage.RegionFile;
 
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +61,9 @@ public class ChunkSaveCommand implements ICommand {
 
         IntegratedServer intServ = Minecraft.getMinecraft().getIntegratedServer();
 
+        intServ.getConfigurationManager().saveAllPlayerData();
+        this.saveAllWorlds(false, intServ);
+
         int blockX = coords.posX;
         int blockZ = coords.posZ;
         int chunkX = MathUtils.floorDiv(blockX, 16);
@@ -68,7 +76,7 @@ public class ChunkSaveCommand implements ICommand {
 
         String name = astring.length == 0 ? chunkX + "." + chunkZ : astring[0];
 
-        File folder = new File("saved chunks");
+        File folder = new File("savedchunks");
         File file = new File(folder, name + ".nbt");
 
         if (!folder.isDirectory()) {
@@ -82,10 +90,12 @@ public class ChunkSaveCommand implements ICommand {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        
+
         try {
             NBTTagCompound nbttagcompound = Chunks.chunkData(chunkX, chunkZ);
-            CompressedStreamTools.write(nbttagcompound, file);
+
+            DataOutputStream dataoutputstream = new DataOutputStream(new FileOutputStream(file));
+            CompressedStreamTools.writeCompressed(nbttagcompound, dataoutputstream);
             csLogger.logInfo("Successfully wrote chunk to nbt file");
         } catch (Exception e) {
             e.printStackTrace();
@@ -112,4 +122,28 @@ public class ChunkSaveCommand implements ICommand {
     public int compareTo(Object o) {
         return 0;
     }
+
+    protected void saveAllWorlds(boolean p_71267_1_, IntegratedServer intServ) {
+        WorldServer[] aworldserver = intServ.worldServers;
+        if (aworldserver == null) return; //Forge: Just in case, NPE protection as it has been encountered.
+        int i = aworldserver.length;
+
+        for (int j = 0; j < i; ++j) {
+            WorldServer worldserver = aworldserver[j];
+
+            if (worldserver != null) {
+                if (!p_71267_1_) {
+                    csLogger.logInfo("Saving chunks for level \'" + worldserver.getWorldInfo().getWorldName() + "\'/" + worldserver.provider.getDimensionName());
+                }
+
+                try {
+                    worldserver.saveAllChunks(true, (IProgressUpdate) null);
+                } catch (MinecraftException minecraftexception) {
+                    csLogger.logWarn(minecraftexception.getMessage());
+                }
+            }
+        }
+    }
+
+
 }

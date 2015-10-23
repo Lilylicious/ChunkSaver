@@ -14,54 +14,12 @@ import java.util.List;
 import java.util.Map;
 
 public class NBTHelper {
-    //Changed the return! EDITED HERE
-    public static Chunk checkedReadChunkFromNBT__Async(World worldObj, int cx, int cy, NBTTagCompound nbtCompound) {
-        if (!nbtCompound.hasKey("Level", 10)) {
-            csLogger.logWarn("Chunk file at " + cx + "," + cy + " is missing level data, skipping");
-            return null;
-        } else if (!nbtCompound.getCompoundTag("Level").hasKey("Sections", 9)) {
-            csLogger.logWarn("Chunk file at " + cx + "," + cy + " is missing block data, skipping");
-            return null;
-        } else {
-            
-            matchBiome(nbtCompound);
-            
-            Chunk chunk = readChunkFromNBT(worldObj, nbtCompound.getCompoundTag("Level"));
-
-            if (!chunk.isAtLocation(cx, cy)) {
-                chunk = null;
-                nbtCompound.getCompoundTag("Level").setInteger("xPos", cx);
-                nbtCompound.getCompoundTag("Level").setInteger("zPos", cy);
-                // Have to move tile entities since we don't load them at this stage
-                NBTTagList tileEntities = nbtCompound.getCompoundTag("Level").getTagList("TileEntities", 10);
-
-                if (tileEntities != null) {
-                    for (int te = 0; te < tileEntities.tagCount(); te++) {
-                        NBTTagCompound tileEntity = (NBTTagCompound) tileEntities.getCompoundTagAt(te);
-                        int x = tileEntity.getInteger("x") - chunk.xPosition * 16;
-                        int z = tileEntity.getInteger("z") - chunk.zPosition * 16;
-                        tileEntity.setInteger("x", cx * 16 + x);
-                        tileEntity.setInteger("z", cy * 16 + z);
-                    }
-                }
-
-                chunk = readChunkFromNBT(worldObj, nbtCompound.getCompoundTag("Level"));
-            }
-
-            Object[] data = new Object[2];
-            data[0] = chunk;
-            data[1] = nbtCompound;
-            // event is fired in ChunkIOProvider.callStage2 since it must be fired after TE's load.
-            // MinecraftForge.EVENT_BUS.post(new ChunkDataEvent.Load(chunk, par4NBTTagCompound));
-            return chunk; //Edited here
-        }
-    }
 
     /**
      * Reads the data stored in the passed NBTTagCompound and creates a Chunk with that data in the passed World.
      * Returns the created Chunk.
      */
-    private static Chunk readChunkFromNBT(World worldObj, NBTTagCompound nbtTag) {
+    public static Chunk readChunkFromNBT(World worldObj, NBTTagCompound nbtTag) {
         int i = nbtTag.getInteger("xPos");
         int j = nbtTag.getInteger("zPos");
         Chunk chunk = new Chunk(worldObj, i, j);
@@ -109,43 +67,13 @@ public class NBTHelper {
 
     }
 
-    private static void matchBiome(NBTTagCompound nbtTag) {
+    public static void matchBiome(NBTTagCompound nbtTag, Chunk normalChunk) {
 
-        NBTTagCompound leftChunk = Chunks.chunkData(nbtTag.getCompoundTag("Level").getInteger("xPos") - 1, nbtTag.getCompoundTag("Level").getInteger("zPos"));
-        NBTTagCompound rightChunk = Chunks.chunkData(nbtTag.getCompoundTag("Level").getInteger("xPos") + 1, nbtTag.getCompoundTag("Level").getInteger("zPos"));
-        NBTTagCompound topChunk = Chunks.chunkData(nbtTag.getCompoundTag("Level").getInteger("xPos"), nbtTag.getCompoundTag("Level").getInteger("zPos") + 1);
-        NBTTagCompound downChunk = Chunks.chunkData(nbtTag.getCompoundTag("Level").getInteger("xPos"), nbtTag.getCompoundTag("Level").getInteger("zPos") - 1);
+        byte[] byteArray = normalChunk.getBiomeArray();
 
-
-        List<byte[]> biomeArray = new ArrayList<byte[]>();
-        biomeArray.add(leftChunk.getCompoundTag("Level").getByteArray("Biomes"));
-        biomeArray.add(rightChunk.getCompoundTag("Level").getByteArray("Biomes"));
-        biomeArray.add(topChunk.getCompoundTag("Level").getByteArray("Biomes"));
-        biomeArray.add(downChunk.getCompoundTag("Level").getByteArray("Biomes"));
-
-        Map<Byte, Integer> byteMap = new HashMap();
-
-        for (byte[] byteArray : biomeArray) {
-            for (Byte b : byteArray) {
-                byteMap.put(b, 1 + (byteMap.containsKey(b) ? byteMap.get(b) : 0));
-            }
-        }
-
-        Byte mostFrequent = null;
-        int maxCount = 0;
-
-        for (Map.Entry entry : byteMap.entrySet()) {
-            if (entry.getValue() != null && (Integer) entry.getValue() > maxCount) {
-                mostFrequent = (Byte)entry.getKey();
-                maxCount = (Integer) entry.getValue();                
-            }
-        }
-        
         byte[] finalByteArray = new byte[256];
-        
-        for(int i = 0; i < finalByteArray.length; i++){
-            finalByteArray[i] = mostFrequent;
-        }
+
+        finalByteArray = byteArray.clone();
 
         if (nbtTag.getCompoundTag("Level").hasKey("Biomes", 7)) {
             nbtTag.getCompoundTag("Level").setByteArray("Biomes", finalByteArray);
