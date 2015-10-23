@@ -40,11 +40,9 @@ public class StaticChunkManagerCore {
 
     @EventHandler
     public void postInit(FMLPostInitializationEvent event) {
-        try {
-            ExampleRequests.requestChunks();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    
+        //ExampleRequests.requestChunks();
+        
     }
 
     @EventHandler
