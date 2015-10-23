@@ -1,3 +1,5 @@
+![](/src/main/resources/assets/staticchunkmanager/logo.png?raw=true)
+
 -------------------------------------------
 Saving Chunks for Fun and Profit
 -------------------------------------------
