@@ -31,8 +31,8 @@ public class Chunks {
 
         IntegratedServer intServ = Minecraft.getMinecraft().getIntegratedServer();
 
-        File worldFolder = new File("saves\\" + intServ.getFolderName());
-        RegionFile region = new RegionFile(new File(worldFolder, "\\region\\r." + regionX + "." + regionZ + ".mca"));
+        File worldFolder = new File("saves/" + intServ.getFolderName());
+        RegionFile region = new RegionFile(new File(worldFolder, "/region/r." + regionX + "." + regionZ + ".mca"));
 
         try {
             // chunkX - regionX*32
