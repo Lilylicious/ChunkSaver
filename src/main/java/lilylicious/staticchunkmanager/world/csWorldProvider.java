@@ -9,7 +9,14 @@ public class csWorldProvider extends WorldProviderSurface {
     @Override
     public IChunkProvider createChunkGenerator()
     {
-        return new csChunkProvider(this.worldObj, this.worldObj.getSeed(), this.worldObj.getWorldInfo().isMapFeaturesEnabled());
+        if (terrainType.getWorldTypeName().equals("SavedChunkWorld"))
+        {
+            return new csChunkProvider(this.worldObj, this.worldObj.getSeed(), this.worldObj.getWorldInfo().isMapFeaturesEnabled());
+        }
+        else
+        {
+            return terrainType.getChunkGenerator(worldObj, field_82913_c);
+        }
     }
 
 }
