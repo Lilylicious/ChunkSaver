@@ -70,8 +70,8 @@ public class ChunkSaveCommand implements ICommand {
         int chunkZ = MathUtils.floorDiv(blockZ, 16);
         int regionX = MathUtils.floorDiv(chunkX, 32);
         int regionZ = MathUtils.floorDiv(chunkZ, 32);
-        File worldFolder = new File("saves\\" + intServ.getFolderName());
-        RegionFile region = new RegionFile(new File(worldFolder, "\\region\\r." + regionX + "." + regionZ + ".mca"));
+        File worldFolder = new File("saves/" + intServ.getFolderName());
+        RegionFile region = new RegionFile(new File(worldFolder, "/region/r." + regionX + "." + regionZ + ".mca"));
 
 
         String name = astring.length == 0 ? chunkX + "." + chunkZ : astring[0];
