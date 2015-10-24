@@ -1,17 +1,11 @@
 package lilylicious.staticchunkmanager.util;
 
-import lilylicious.staticchunkmanager.chunk.Chunks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.NibbleArray;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class NBTHelper {
 
@@ -33,20 +27,20 @@ public class NBTHelper {
         boolean flag = !worldObj.provider.hasNoSky;
 
         for (int k = 0; k < nbttaglist.tagCount(); ++k) {
-            NBTTagCompound nbttagcompound1 = nbttaglist.getCompoundTagAt(k);
-            byte b1 = nbttagcompound1.getByte("Y");
+            NBTTagCompound section = nbttaglist.getCompoundTagAt(k);
+            byte b1 = section.getByte("Y");
             ExtendedBlockStorage extendedblockstorage = new ExtendedBlockStorage(b1 << 4, flag);
-            extendedblockstorage.setBlockLSBArray(nbttagcompound1.getByteArray("Blocks"));
+            extendedblockstorage.setBlockLSBArray(section.getByteArray("Blocks"));
 
-            if (nbttagcompound1.hasKey("Add", 7)) {
-                extendedblockstorage.setBlockMSBArray(new NibbleArray(nbttagcompound1.getByteArray("Add"), 4));
+            if (section.hasKey("Add", 7)) {
+                extendedblockstorage.setBlockMSBArray(new NibbleArray(section.getByteArray("Add"), 4));
             }
 
-            extendedblockstorage.setBlockMetadataArray(new NibbleArray(nbttagcompound1.getByteArray("Data"), 4));
-            extendedblockstorage.setBlocklightArray(new NibbleArray(nbttagcompound1.getByteArray("BlockLight"), 4));
+            extendedblockstorage.setBlockMetadataArray(new NibbleArray(section.getByteArray("Data"), 4));
+            extendedblockstorage.setBlocklightArray(new NibbleArray(section.getByteArray("BlockLight"), 4));
 
             if (flag) {
-                extendedblockstorage.setSkylightArray(new NibbleArray(nbttagcompound1.getByteArray("SkyLight"), 4));
+                extendedblockstorage.setSkylightArray(new NibbleArray(section.getByteArray("SkyLight"), 4));
             }
 
             extendedblockstorage.removeInvalidBlocks();
@@ -79,6 +73,93 @@ public class NBTHelper {
             nbtTag.getCompoundTag("Level").setByteArray("Biomes", finalByteArray);
         }
 
+    }
+
+    //Pass it a level nbtTag
+    public static void matchHeight(NBTTagCompound nbtTag, Chunk normalChunk) {
+
+        int heightGoal;
+        int sectionTarget;
+        int highestSectionY = 0;
+        NBTTagCompound highestSection = null;
+        NBTTagCompound targetSection = null;
+
+        ExtendedBlockStorage[] exBlockStorage = normalChunk.getBlockStorageArray();
+
+        NBTTagList sectionList = nbtTag.getTagList("Sections", 10);
+
+
+        for (int x = 0; x < 16; x++) {
+            for (int y = 0; y < 16; y++) {
+                heightGoal = normalChunk.getHeightValue(x, y);
+                sectionTarget = MathUtils.floorDiv(heightGoal, 16);
+
+                // Finds the highest section and target section
+                for (int k = 0; k < sectionList.tagCount(); ++k) {
+                    NBTTagCompound section = sectionList.getCompoundTagAt(k);
+                    byte b1 = section.getByte("Y");
+
+                    if (b1 == sectionTarget) {
+                        targetSection = section;
+                    }
+
+                    if (b1 > highestSectionY) {
+                        highestSectionY = b1;
+                        highestSection = section;
+                    }
+                                        
+                }
+
+                //Set targetsection equal to the highest section and changes the Y
+                if (highestSection != null && targetSection != null && highestSection != targetSection) {
+                    targetSection = (NBTTagCompound) highestSection.copy();
+                    targetSection.setByte("Y", (byte)sectionTarget);
+                }
+                
+                
+                
+                //Deletes sections above the targetsection
+                if (sectionTarget < highestSectionY) {
+                    //Move down
+                    for (int k = 0; k < sectionList.tagCount(); ++k) {
+                        NBTTagCompound section = sectionList.getCompoundTagAt(k);
+                        if (section.getByte("Y") > sectionTarget) {
+
+                            nbtTag.getTagList("Sections", 10).removeTag(k);
+                        }
+                    }
+
+                }
+                //This code fills sections underneath the targetsection with the block data from normalchunk
+                //This not only fills in the space below the surface of the new highest level, it also
+                //does normal oregen. This may not be wanted, might want to add a way to match the entire chunk
+                //including underground.
+                for (int k = 0; k < sectionList.tagCount(); ++k) {
+                    NBTTagCompound section = sectionList.getCompoundTagAt(k);
+                    byte b1 = section.getByte("Y");
+                    if (b1 < sectionTarget) {
+
+                        ExtendedBlockStorage blockstorage = exBlockStorage[b1];
+
+                        section.setByteArray("Blocks", blockstorage.getBlockLSBArray());
+
+                        if (blockstorage.getBlockMSBArray() != null) {
+                            section.setByteArray("Add", blockstorage.getBlockMSBArray().data);
+                        }
+                        section.setByteArray("Data", blockstorage.getMetadataArray().data);
+                    }
+
+                }
+                //Match terrain using air as delete
+                //Find top block in the current section, move it down to the top block
+                //in the normalchunk
+                
+                //Actually, find the top block in normal chunk, then find the top block in
+                //current section, set blocks to air until the positions are the same then
+                //set that block to the top block in current section
+
+            }
+        }
     }
 
 

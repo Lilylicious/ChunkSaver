@@ -8,7 +8,6 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,14 +20,14 @@ public class ChunkRequest {
     public boolean stream;
     public boolean matchBiomes;
     public InputStream inStream;
+    public boolean matchHeight;
 
     /**
-     * 
      * @param file
      * @param x
      * @param y
      * @param extras - Whether or not to match biomes
-     * @param 
+     * @param
      */
     public ChunkRequest(File file, int x, int y, boolean... extras) {
         this.file = file;
@@ -36,6 +35,7 @@ public class ChunkRequest {
         this.cy = y;
         this.stream = false;
         this.matchBiomes = extras.length > 0 ? extras[0] : false;
+        this.matchHeight = extras.length > 1 ? extras[1] : false;
     }
 
     public ChunkRequest(InputStream is, int x, int y, boolean... extras) {
@@ -44,6 +44,7 @@ public class ChunkRequest {
         this.cy = y;
         this.stream = true;
         this.matchBiomes = extras.length > 0 ? extras[0] : false;
+        this.matchHeight = extras.length > 1 ? extras[1] : false;
     }
 
     public NBTTagCompound readFile() throws IOException {
@@ -65,6 +66,11 @@ public class ChunkRequest {
 
             if (this.matchBiomes) {
                 NBTHelper.matchBiome(nbtCompound, normalChunk);
+            }
+            
+            //If this is called, the readFile() at the top of readChunk gets IOException stream closed.. What?
+            if (this.matchHeight) {
+                NBTHelper.matchHeight(nbtCompound.getCompoundTag("Level"), normalChunk);
             }
 
             Chunk chunk = NBTHelper.readChunkFromNBT(worldObj, nbtCompound.getCompoundTag("Level"));
