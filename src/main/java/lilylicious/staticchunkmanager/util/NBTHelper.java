@@ -76,7 +76,7 @@ public class NBTHelper {
     }
 
     //Pass it a level nbtTag
-    public static void matchHeight(NBTTagCompound nbtTag, Chunk normalChunk) {
+    public static void matchHeight(NBTTagCompound nbtTag, Chunk normalChunk, boolean regenOre) {
 
         int heightGoal;
         int sectionTarget;
@@ -107,17 +107,16 @@ public class NBTHelper {
                         highestSectionY = b1;
                         highestSection = section;
                     }
-                                        
+
                 }
 
                 //Set targetsection equal to the highest section and changes the Y
                 if (highestSection != null && targetSection != null && highestSection != targetSection) {
                     targetSection = (NBTTagCompound) highestSection.copy();
-                    targetSection.setByte("Y", (byte)sectionTarget);
+                    targetSection.setByte("Y", (byte) sectionTarget);
                 }
-                
-                
-                
+
+
                 //Deletes sections above the targetsection
                 if (sectionTarget < highestSectionY) {
                     //Move down
@@ -132,28 +131,36 @@ public class NBTHelper {
                 }
                 //This code fills sections underneath the targetsection with the block data from normalchunk
                 //This not only fills in the space below the surface of the new highest level, it also
-                //does normal oregen. This may not be wanted, might want to add a way to match the entire chunk
-                //including underground.
-                for (int k = 0; k < sectionList.tagCount(); ++k) {
-                    NBTTagCompound section = sectionList.getCompoundTagAt(k);
-                    byte b1 = section.getByte("Y");
-                    if (b1 < sectionTarget) {
+                //does normal oregen. It only keeps the target section (the 16x16x16 chunk of the chunk
+                //that is the highest Y level in the entire chunk)
+                if (regenOre) {
+                    for (int k = 0; k < sectionList.tagCount(); ++k) {
+                        NBTTagCompound section = sectionList.getCompoundTagAt(k);
+                        byte b1 = section.getByte("Y");
+                        if (b1 < sectionTarget) {
 
-                        ExtendedBlockStorage blockstorage = exBlockStorage[b1];
+                            ExtendedBlockStorage blockstorage = exBlockStorage[b1];
 
-                        section.setByteArray("Blocks", blockstorage.getBlockLSBArray());
+                            section.setByteArray("Blocks", blockstorage.getBlockLSBArray());
 
-                        if (blockstorage.getBlockMSBArray() != null) {
-                            section.setByteArray("Add", blockstorage.getBlockMSBArray().data);
+                            if (blockstorage.getBlockMSBArray() != null) {
+                                section.setByteArray("Add", blockstorage.getBlockMSBArray().data);
+                            }
+                            section.setByteArray("Data", blockstorage.getMetadataArray().data);
                         }
-                        section.setByteArray("Data", blockstorage.getMetadataArray().data);
                     }
+                    
+                    //Need an alternative here to the method that regens ore.
+                    //Needs to avoid filling in intentional caves/buildings with large empty space.
+                    //Could search through blocks and try to find "interesting" structures
+                    //Difficult to determine what is interesting and what isn't
+                    
 
                 }
                 //Match terrain using air as delete
                 //Find top block in the current section, move it down to the top block
                 //in the normalchunk
-                
+
                 //Actually, find the top block in normal chunk, then find the top block in
                 //current section, set blocks to air until the positions are the same then
                 //set that block to the top block in current section
