@@ -11,7 +11,7 @@ public class csWorldProvider extends WorldProviderSurface {
     {
         if (terrainType.getWorldTypeName().equals("SavedChunkWorld"))
         {
-            return new csChunkProvider(this.worldObj, this.worldObj.getSeed(), this.worldObj.getWorldInfo().isMapFeaturesEnabled(), "void");
+            return new csChunkProvider(this.worldObj, this.worldObj.getSeed(), this.worldObj.getWorldInfo().isMapFeaturesEnabled(), "normal");
         }
         else
         {
