@@ -7,6 +7,11 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.NibbleArray;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class NBTHelper {
 
     /**
@@ -75,22 +80,121 @@ public class NBTHelper {
 
     }
 
-    //Pass it a level nbtTag
-    public static void matchHeight(NBTTagCompound nbtTag, Chunk normalChunk, boolean regenOre) {
+    public static NBTTagCompound matchHeight(NBTTagCompound prevTag, Chunk normalChunk, boolean regenOre) {
+        NBTTagCompound newNBT = new NBTTagCompound();
+        NBTTagCompound levelNBT = new NBTTagCompound();
+        NBTTagList sectionList = new NBTTagList();
+        Byte[] oldBlocks = new Byte[4096];
+        Byte[] blocks = new Byte[4096];
+
+        
+        //All the blocks that exist in the normalChunk
+        //Currently assuming that empty blockstorages are still saved
+        ExtendedBlockStorage[] exBlockStorage = normalChunk.getBlockStorageArray();
+
+        int blockIndex;
+        int targetSectionY;
+        Map<Integer, NBTTagCompound> sectionNums = new HashMap();
+        List<NBTTagCompound> newSections = new ArrayList();
+
+        //Saves a map of all pre-existing sections in the prevTag
+        for (int k = 0; k < prevTag.getCompoundTag("Level").getTagList("Sections", 10).tagCount(); ++k) {
+            NBTTagCompound tag = prevTag.getCompoundTag("Level").getTagList("Sections", 10).getCompoundTagAt(k);
+            sectionNums.put((int) tag.getByte("Y"), tag);
+        }
+        
+        //Currently recreates each section that either exists in the prevtag or normalchunk
+        //If prevtag section exists, use that. If not, use normalchunk.
+        //Probably needs rethinking
+        for (int k = 0; k < 16; ++k) {
+            NBTTagCompound tag = new NBTTagCompound();
+            boolean containsKey = sectionNums.containsKey(k);
+            
+            if (exBlockStorage[k] != null || containsKey) {
+                tag.setByte("Y", (byte) k);
+                tag.setByteArray("Blocks", containsKey ? sectionNums.get(k).getByteArray("Blocks") : exBlockStorage[k].getBlockLSBArray());
+                if (containsKey ? sectionNums.get(k).hasKey("Add") : exBlockStorage[k].getBlockMSBArray() != null) {
+                    tag.setByteArray("Add", containsKey ? sectionNums.get(k).getByteArray("Add") : exBlockStorage[k].getBlockMSBArray().data);
+                }
+                tag.setByteArray("Data", containsKey ? sectionNums.get(k).getByteArray("Data") : exBlockStorage[k].getMetadataArray().data);
+
+                newSections.add(tag);
+            }
+        }
+        //Rest of the level NBT creation
+        levelNBT.setInteger("xPos", normalChunk.xPosition);
+        levelNBT.setInteger("zPos", normalChunk.zPosition);
+        levelNBT.setIntArray("HeightMap", normalChunk.heightMap);
+        //levelNBT.setBoolean("TerrainPopulated", !populateTerrain);
+
+        //Planned spot for the block replacement.
+        //We want a byte array of the normal chunk, then
+        //somehow we want to match the dirt/sand/stone ground level
+        //to the equivalent in the new chunk, making any structures
+        //move into a new chunk
+        //
+        //Maybe we want to do this differently.
+        //Current thinking is that we look through all 4096
+        //blocks in a section, then through some logic we transpose
+        //the new section onto the old, retaining height data
+        //but replacing blocks.
+        
+        //If newBlock == dirt/stone/sand && oldBlock+1Y == air && oldBlock != air, oldBlock = newBlock
+        //Maybe
+        for (int x = 0; x < 16; x++) {
+            for (int z = 0; z < 16; z++) {
+                for (int y = 0; y < 16; y++) {
+                    blockIndex = y * 16 * 16 + z * 16 + x;
+                    targetSectionY = MathUtils.floorDiv(normalChunk.getHeightValue(x, z), 16);
+
+                    //What section do we actually care about here?
+                    int section = 1;
+                    Byte normalBlockID_a = exBlockStorage[section].getBlockLSBArray()[blockIndex];
+                    Byte normalBlockID_b = Nibble4(exBlockStorage[section].getBlockMSBArray().data, blockIndex);
+                    short normalBlockIDFull = (short) (normalBlockID_a + (normalBlockID_b << 8));
+
+                }
+
+            }
+        }
+
+
+        //Completion of the newNBT tag
+        newNBT.setTag("Level", levelNBT);
+
+        return newNBT;
+    }
+
+    //Gets the Add array of half-bytes that complete the block ID if present
+    private static byte Nibble4(byte[] arr, int index) {
+        int i = arr[index / 2] & 0x0F;
+        int i2 = (arr[index / 2] >> 4) & 0x0F;
+        byte b = index % 2 == 0 ? (byte) i : (byte) i2;
+        return b;
+    }
+    
+    
+    
+    
+    /* //Kept around for reference purposes
+        public static NBTTagCompound matchHeight(NBTTagCompound prevTag, Chunk normalChunk, boolean regenOre) {
 
         int heightGoal;
         int sectionTarget;
         int highestSectionY = 0;
+        boolean targetSectionFound;
         NBTTagCompound highestSection = null;
         NBTTagCompound targetSection = null;
+        NBTTagCompound nbtTag = (NBTTagCompound) prevTag.copy();
 
         ExtendedBlockStorage[] exBlockStorage = normalChunk.getBlockStorageArray();
 
-        NBTTagList sectionList = nbtTag.getTagList("Sections", 10);
+        NBTTagList sectionList = nbtTag.getCompoundTag("Level").getTagList("Sections", 10);
 
 
         for (int x = 0; x < 16; x++) {
             for (int y = 0; y < 16; y++) {
+                targetSectionFound = false;
                 heightGoal = normalChunk.getHeightValue(x, y);
                 sectionTarget = MathUtils.floorDiv(heightGoal, 16);
 
@@ -100,7 +204,7 @@ public class NBTHelper {
                     byte b1 = section.getByte("Y");
 
                     if (b1 == sectionTarget) {
-                        targetSection = section;
+                        sectionList.removeTag(k);
                     }
 
                     if (b1 > highestSectionY) {
@@ -109,11 +213,16 @@ public class NBTHelper {
                     }
 
                 }
+                    targetSection = new NBTTagCompound();
 
                 //Set targetsection equal to the highest section and changes the Y
-                if (highestSection != null && targetSection != null && highestSection != targetSection) {
-                    targetSection = (NBTTagCompound) highestSection.copy();
-                    targetSection.setByte("Y", (byte) sectionTarget);
+                if (highestSection != null && targetSection != null) {
+                    targetSection.setByte("Y", (byte)(sectionTarget));
+                    targetSection.setByteArray("Blocks", highestSection.getByteArray("Blocks"));
+                    targetSection.setByteArray("Data", highestSection.getByteArray("Data"));
+                    targetSection.setByteArray("SkyLight", highestSection.getByteArray("Skylight"));
+                    targetSection.setByteArray("BlockLight", highestSection.getByteArray("Blocklight"));
+                    sectionList.appendTag(targetSection);
                 }
 
 
@@ -122,13 +231,15 @@ public class NBTHelper {
                     //Move down
                     for (int k = 0; k < sectionList.tagCount(); ++k) {
                         NBTTagCompound section = sectionList.getCompoundTagAt(k);
-                        if (section.getByte("Y") > sectionTarget) {
+                        if (section.getByte("Y") > sectionTarget + 1) {
 
-                            nbtTag.getTagList("Sections", 10).removeTag(k);
+                            nbtTag.getCompoundTag("Level").getTagList("Sections", 10).removeTag(k);
                         }
                     }
 
                 }
+
+
                 //This code fills sections underneath the targetsection with the block data from normalchunk
                 //This not only fills in the space below the surface of the new highest level, it also
                 //does normal oregen. It only keeps the target section (the 16x16x16 chunk of the chunk
@@ -149,12 +260,12 @@ public class NBTHelper {
                             section.setByteArray("Data", blockstorage.getMetadataArray().data);
                         }
                     }
-                    
+
                     //Need an alternative here to the method that regens ore.
                     //Needs to avoid filling in intentional caves/buildings with large empty space.
                     //Could search through blocks and try to find "interesting" structures
                     //Difficult to determine what is interesting and what isn't
-                    
+
 
                 }
                 //Match terrain using air as delete
@@ -164,10 +275,11 @@ public class NBTHelper {
                 //Actually, find the top block in normal chunk, then find the top block in
                 //current section, set blocks to air until the positions are the same then
                 //set that block to the top block in current section
-
             }
         }
-    }
+
+        return nbtTag;
+    } */
 
 
 }

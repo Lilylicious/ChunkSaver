@@ -41,7 +41,7 @@ public class StaticChunkManagerCore {
     @EventHandler
     public void postInit(FMLPostInitializationEvent event) {
     
-        //ExampleRequests.requestChunks();
+        ExampleRequests.requestChunks();
         
     }
 

@@ -70,7 +70,7 @@ public class ChunkRequest {
             
             //If this is called, the readFile() at the top of readChunk gets IOException stream closed.. What?
             if (this.matchHeight) {
-                NBTHelper.matchHeight(nbtCompound.getCompoundTag("Level"), normalChunk);
+               nbtCompound = NBTHelper.matchHeight(nbtCompound, normalChunk, true);
             }
 
             Chunk chunk = NBTHelper.readChunkFromNBT(worldObj, nbtCompound.getCompoundTag("Level"));
