@@ -15,7 +15,7 @@ public class csWorldProvider extends WorldProviderSurface {
         }
         else
         {
-            return terrainType.getChunkGenerator(this.worldObj, this.field_82913_c);
+            return super.createChunkGenerator();
         }
     }
 
