@@ -6,10 +6,10 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.NibbleArray;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
+import org.apache.commons.lang3.ArrayUtils;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class NBTHelper {
@@ -83,82 +83,146 @@ public class NBTHelper {
     public static NBTTagCompound matchHeight(NBTTagCompound prevTag, Chunk normalChunk, boolean regenOre) {
         NBTTagCompound newNBT = new NBTTagCompound();
         NBTTagCompound levelNBT = new NBTTagCompound();
+        NBTTagCompound targetSection;
+        NBTTagCompound highestSection;
         NBTTagList sectionList = new NBTTagList();
-        Byte[] oldBlocks = new Byte[4096];
-        Byte[] blocks = new Byte[4096];
+        byte[] blocks;
+        byte[] add = new byte[4096];
 
-        
         //All the blocks that exist in the normalChunk
         //Currently assuming that empty blockstorages are still saved
         ExtendedBlockStorage[] exBlockStorage = normalChunk.getBlockStorageArray();
 
         int blockIndex;
         int targetSectionY;
+        int highestSectionY = 0;
         Map<Integer, NBTTagCompound> sectionNums = new HashMap();
-        List<NBTTagCompound> newSections = new ArrayList();
 
         //Saves a map of all pre-existing sections in the prevTag
         for (int k = 0; k < prevTag.getCompoundTag("Level").getTagList("Sections", 10).tagCount(); ++k) {
             NBTTagCompound tag = prevTag.getCompoundTag("Level").getTagList("Sections", 10).getCompoundTagAt(k);
             sectionNums.put((int) tag.getByte("Y"), tag);
+            if (tag.getByte("Y") > highestSectionY) highestSectionY = tag.getByte("Y");
         }
-        
-        //Currently recreates each section that either exists in the prevtag or normalchunk
-        //If prevtag section exists, use that. If not, use normalchunk.
-        //Probably needs rethinking
-        for (int k = 0; k < 16; ++k) {
-            NBTTagCompound tag = new NBTTagCompound();
-            boolean containsKey = sectionNums.containsKey(k);
-            
-            if (exBlockStorage[k] != null || containsKey) {
-                tag.setByte("Y", (byte) k);
-                tag.setByteArray("Blocks", containsKey ? sectionNums.get(k).getByteArray("Blocks") : exBlockStorage[k].getBlockLSBArray());
-                if (containsKey ? sectionNums.get(k).hasKey("Add") : exBlockStorage[k].getBlockMSBArray() != null) {
-                    tag.setByteArray("Add", containsKey ? sectionNums.get(k).getByteArray("Add") : exBlockStorage[k].getBlockMSBArray().data);
-                }
-                tag.setByteArray("Data", containsKey ? sectionNums.get(k).getByteArray("Data") : exBlockStorage[k].getMetadataArray().data);
 
-                newSections.add(tag);
-            }
-        }
+        highestSection = sectionNums.get(highestSectionY);
+        blocks = highestSection.getByteArray("Blocks");
+
         //Rest of the level NBT creation
+        levelNBT.setByte("V", (byte) 1);
         levelNBT.setInteger("xPos", normalChunk.xPosition);
         levelNBT.setInteger("zPos", normalChunk.zPosition);
         levelNBT.setIntArray("HeightMap", normalChunk.heightMap);
-        //levelNBT.setBoolean("TerrainPopulated", !populateTerrain);
+        levelNBT.setBoolean("LightPopulated", false);
+        levelNBT.setBoolean("TerrainPopulated", true);
 
-        //Planned spot for the block replacement.
-        //We want a byte array of the normal chunk, then
-        //somehow we want to match the dirt/sand/stone ground level
-        //to the equivalent in the new chunk, making any structures
-        //move into a new chunk
-        //
-        //Maybe we want to do this differently.
-        //Current thinking is that we look through all 4096
-        //blocks in a section, then through some logic we transpose
-        //the new section onto the old, retaining height data
-        //but replacing blocks.
-        
-        //If newBlock == dirt/stone/sand && oldBlock+1Y == air && oldBlock != air, oldBlock = newBlock
-        //Maybe
+        //List of terrain IDs
+        short[] terrainID = new short[]{1, 2, 3, 12, 13};
+
         for (int x = 0; x < 16; x++) {
             for (int z = 0; z < 16; z++) {
-                for (int y = 0; y < 16; y++) {
-                    blockIndex = y * 16 * 16 + z * 16 + x;
-                    targetSectionY = MathUtils.floorDiv(normalChunk.getHeightValue(x, z), 16);
 
-                    //What section do we actually care about here?
-                    int section = 1;
-                    Byte normalBlockID_a = exBlockStorage[section].getBlockLSBArray()[blockIndex];
-                    Byte normalBlockID_b = Nibble4(exBlockStorage[section].getBlockMSBArray().data, blockIndex);
-                    short normalBlockIDFull = (short) (normalBlockID_a + (normalBlockID_b << 8));
+                int targetHeight = normalChunk.getHeightValue(x, z);
+                targetSectionY = MathUtils.floorDiv(targetHeight, 16);
+                
+                /*
+                if (sectionNums.containsKey(targetSectionY)) {
+                    targetSection = sectionNums.get(targetSectionY);
+                    for (int i = targetSectionY + 2; i <= highestSectionY; i++) {
+                        sectionNums.remove(i);
+                    }
+                    
+                } else {
+                    //Generates a new section as the target, identical to the highest but at the right spot
+                    targetSection = (NBTTagCompound) highestSection.copy();
+                    targetSection.setByte("Y", (byte) targetSectionY);
+                    sectionNums.put(targetSectionY, targetSection);
+                    
+                    //Re-makes sections lower than the target with the contents of a normal section from a normal chunk
+                    for (int i = targetSectionY - 1; i >= 0; i--) {
+                        NBTTagCompound newSection;
+                        ExtendedBlockStorage bs = exBlockStorage[i];
+                        newSection = newSection(bs);
+                        sectionNums.put(i, newSection);
+                    }
+                }
+                
+                */
+                boolean hasAdd = false; //highestSection.hasKey("Add");
 
+                if (hasAdd) {
+                    add = highestSection.getByteArray("Add");
                 }
 
+                int topBlockHeight = 0;
+                short topBlockID = 0;
+
+                for (int y = 15; y >= 0; y--) {
+
+                    //Find topblock
+                    blockIndex = y * 16 * 16 + z * 16 + x;
+                    short blockID = (short) (blocks[blockIndex] + (hasAdd ? (Nibble4(add, blockIndex)) << 8 : 0));
+
+                    if (ArrayUtils.contains(terrainID, blockID)) {
+                        topBlockHeight = y;
+                        topBlockID = blockID;
+                        break;
+                    }
+                }
+
+                if (topBlockID != 0) {
+                    while (targetHeight % 16 < topBlockHeight) {
+                        // Move it down
+                        ExtendedBlockStorage blockStorage = exBlockStorage[targetSectionY];
+                        int y = topBlockHeight;
+                        blockIndex = y * 16 * 16 + z * 16 + x;
+                        int belowBlockIndex = (y > 0 ? (y - 1) : y) * 16 * 16 + z * 16 + x;
+
+                        short belowBlockID = (short) (blocks[belowBlockIndex] + (hasAdd ? (Nibble4(add, belowBlockIndex)) << 8 : 0));
+
+                        if (Arrays.asList(terrainID).contains(topBlockID)
+                                && Arrays.asList(terrainID).contains(belowBlockID)
+                                && y != 0) {
+                            blocks[belowBlockIndex] = blocks[blockIndex];
+                            blocks[blockIndex] = 0;
+                        }
+
+                        topBlockHeight--;
+                    }
+                    
+                    while (targetHeight % 16 > topBlockHeight) {
+
+                        // Move it up
+                        short aboveBlockID = 0;
+                        int y = topBlockHeight;
+                        blockIndex = y * 16 * 16 + z * 16 + x - 1;
+                        int aboveBlockIndex = (y < 15 ? (y + 1) : y) * 16 * 16 + z * 16 + x - 1;
+                        if (blockIndex != aboveBlockIndex) {
+                            aboveBlockID = (short) (blocks[aboveBlockIndex] + (hasAdd ? (Nibble4(add, aboveBlockIndex)) << 8 : 0));
+                        }
+                        Byte normalBlockID_a = exBlockStorage[targetSectionY].getBlockLSBArray()[blockIndex];
+                        Byte normalBlockID_b = (exBlockStorage[targetSectionY].getBlockMSBArray() != null ? Nibble4(exBlockStorage[targetSectionY].getBlockMSBArray().data, blockIndex) : 0);
+
+                        if (Arrays.asList(terrainID).contains(topBlockID)
+                                && Arrays.asList(terrainID).contains(aboveBlockID)
+                                && y != 0) {
+                            blocks[aboveBlockIndex] = blocks[blockIndex];
+                            blocks[blockIndex] = normalBlockID_a;
+                            reverseNibble(add, blockIndex, normalBlockID_b);
+                        }
+
+                        topBlockHeight++;
+                    }
+                }
             }
         }
 
 
+        for (NBTTagCompound tag : sectionNums.values()) {
+            sectionList.appendTag(tag);
+        }
+
+        levelNBT.setTag("Sections", sectionList);
         //Completion of the newNBT tag
         newNBT.setTag("Level", levelNBT);
 
@@ -172,8 +236,31 @@ public class NBTHelper {
         byte b = index % 2 == 0 ? (byte) i : (byte) i2;
         return b;
     }
-    
-    
+
+    //VERY UNSURE ABOUT THIS
+    private static void reverseNibble(byte[] arr, int index, byte b1) {
+        byte i = (byte) (index % 2 == 0 ? (arr[index / 2] & 0x0F) : b1);
+        byte i2 = (byte) (index % 2 != 0 ? ((arr[index / 2] >> 4) & 0x0F) : b1);
+
+        arr[index / 2] = (byte) (i | i2);
+    }
+
+    private static NBTTagCompound newSection(ExtendedBlockStorage bs) {
+        NBTTagCompound newSection = new NBTTagCompound();
+
+        newSection.setByte("Y", (byte) (bs.getYLocation() >> 4 & 255));
+        newSection.setByteArray("Blocks", bs.getBlockLSBArray());
+
+        if (bs.getBlockMSBArray() != null) {
+            newSection.setByteArray("Add", bs.getBlockMSBArray().data);
+        }
+
+        newSection.setByteArray("Data", bs.getMetadataArray().data);
+        newSection.setByteArray("BlockLight", bs.getBlocklightArray().data);
+        newSection.setByteArray("SkyLight", new byte[bs.getBlocklightArray().data.length]);
+
+        return newSection;
+    }
     
     
     /* //Kept around for reference purposes

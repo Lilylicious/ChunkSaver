@@ -8,6 +8,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,10 +49,9 @@ public class ChunkRequest {
     }
 
     public NBTTagCompound readFile() throws IOException {
-        if (stream) return CompressedStreamTools.readCompressed(inStream);
+        if (stream) return CompressedStreamTools.read(new DataInputStream(inStream));
         else return CompressedStreamTools.read(file);
     }
-
 
     public Chunk readChunk(World worldObj, Chunk normalChunk) throws IOException {
         NBTTagCompound nbtCompound = readFile();
@@ -64,13 +64,12 @@ public class ChunkRequest {
             return null;
         } else {
 
+            if (this.matchHeight) {
+                nbtCompound = NBTHelper.matchHeight(nbtCompound, normalChunk, true);
+            }
+
             if (this.matchBiomes) {
                 NBTHelper.matchBiome(nbtCompound, normalChunk);
-            }
-            
-            //If this is called, the readFile() at the top of readChunk gets IOException stream closed.. What?
-            if (this.matchHeight) {
-               nbtCompound = NBTHelper.matchHeight(nbtCompound, normalChunk, true);
             }
 
             Chunk chunk = NBTHelper.readChunkFromNBT(worldObj, nbtCompound.getCompoundTag("Level"));

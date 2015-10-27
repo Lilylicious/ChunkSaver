@@ -95,7 +95,9 @@ public class ChunkSaveCommand implements ICommand {
             NBTTagCompound nbttagcompound = Chunks.chunkData(chunkX, chunkZ);
 
             DataOutputStream dataoutputstream = new DataOutputStream(new FileOutputStream(file));
-            CompressedStreamTools.writeCompressed(nbttagcompound, dataoutputstream);
+            
+            //Changed to non-compressed, make new chunks and test if it's still closing streams,
+            CompressedStreamTools.write(nbttagcompound, dataoutputstream);
             csLogger.logInfo("Successfully wrote chunk to nbt file");
         } catch (Exception e) {
             e.printStackTrace();

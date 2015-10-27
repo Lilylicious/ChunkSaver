@@ -1,10 +1,12 @@
 package lilylicious.staticchunkmanager.chunk;
 
+import lilylicious.staticchunkmanager.util.csLogger;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.ChunkProviderGenerate;
 
 import java.awt.*;
+import java.io.EOFException;
 import java.io.IOException;
 
 public class csChunkProvider extends ChunkProviderGenerate {
@@ -31,6 +33,13 @@ public class csChunkProvider extends ChunkProviderGenerate {
         try {
             if (Chunks.chunkMap.containsKey(key)) {
                 chunk = Chunks.chunkMap.get(key).readChunk(this.worldObj, normalChunk);
+            }
+        } catch (EOFException e) {
+            try{
+                csLogger.logInfo("EOFException");
+            Chunks.chunkMap.get(key).inStream.close();
+            } catch (IOException k) {
+                k.printStackTrace();
             }
         } catch (IOException e) {
             e.printStackTrace();
