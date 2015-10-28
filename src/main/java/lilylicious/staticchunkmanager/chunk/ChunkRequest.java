@@ -20,6 +20,7 @@ public class ChunkRequest {
     public int cy;
     public boolean stream;
     public boolean matchBiomes;
+    public String streampath;
     public InputStream inStream;
 
     /**
@@ -40,6 +41,15 @@ public class ChunkRequest {
 
     public ChunkRequest(InputStream is, int x, int y, boolean... extras) {
         this.inStream = is;
+        this.cx = x;
+        this.cy = y;
+        this.stream = true;
+        this.matchBiomes = extras.length > 0 ? extras[0] : false;
+    }
+
+    public ChunkRequest(InputStream is, String path, int x, int y, boolean... extras) {
+        this.inStream = is;
+        this.streampath = path;
         this.cx = x;
         this.cy = y;
         this.stream = true;

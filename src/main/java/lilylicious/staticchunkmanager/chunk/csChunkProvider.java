@@ -31,7 +31,10 @@ public class csChunkProvider extends ChunkProviderGenerate {
         Point key = new Point(chunkX, chunkZ);
 
         try {
-            if (Chunks.chunkMap.containsKey(key)) {
+            if (Chunks.worldChunkMap.containsKey(key)) {
+                chunk = Chunks.worldChunkMap.get(key).readChunk(this.worldObj, normalChunk);
+            }
+            else if (Chunks.chunkMap.containsKey(key)) {
                 chunk = Chunks.chunkMap.get(key).readChunk(this.worldObj, normalChunk);
             }
         } catch (IOException e) {
