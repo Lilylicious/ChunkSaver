@@ -34,7 +34,6 @@ public class csAPI {
      * added to the map of requested chunks for the
      * current world. This is useful if you are
      * implementing your own per world randomization.
-     * ToDo: Where to call this method.
      */
     public static void requestWorldChunk(ChunkRequest cReq) {
 
