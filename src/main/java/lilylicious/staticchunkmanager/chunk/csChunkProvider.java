@@ -34,13 +34,6 @@ public class csChunkProvider extends ChunkProviderGenerate {
             if (Chunks.chunkMap.containsKey(key)) {
                 chunk = Chunks.chunkMap.get(key).readChunk(this.worldObj, normalChunk);
             }
-        } catch (EOFException e) {
-            try{
-                csLogger.logInfo("EOFException");
-            Chunks.chunkMap.get(key).inStream.close();
-            } catch (IOException k) {
-                k.printStackTrace();
-            }
         } catch (IOException e) {
             e.printStackTrace();
         }

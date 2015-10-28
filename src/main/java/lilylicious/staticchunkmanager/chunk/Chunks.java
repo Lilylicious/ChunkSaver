@@ -8,6 +8,7 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.world.chunk.storage.RegionFile;
+import net.minecraftforge.common.DimensionManager;
 
 import java.awt.*;
 import java.io.DataInputStream;
@@ -29,9 +30,8 @@ public class Chunks {
         int regionX = MathUtils.floorDiv(cx, 32);
         int regionZ = MathUtils.floorDiv(cy, 32);
 
-        IntegratedServer intServ = Minecraft.getMinecraft().getIntegratedServer();
 
-        File worldFolder = new File("saves/" + intServ.getFolderName());
+        File worldFolder = new File("saves/" + DimensionManager.getCurrentSaveRootDirectory());
         RegionFile region = new RegionFile(new File(worldFolder, "/region/r." + regionX + "." + regionZ + ".mca"));
 
         try {

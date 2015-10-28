@@ -117,7 +117,7 @@ public class NBTHelper {
         levelNBT.setBoolean("TerrainPopulated", true);
 
         //List of terrain IDs
-        short[] terrainID = new short[]{1, 2, 3, 12, 13};
+        short[] terrainID = new short[]{0, 1, 2, 3, 12, 13};
 
         for (int x = 0; x < 16; x++) {
             for (int z = 0; z < 16; z++) {
@@ -125,7 +125,6 @@ public class NBTHelper {
                 int targetHeight = normalChunk.getHeightValue(x, z);
                 targetSectionY = MathUtils.floorDiv(targetHeight, 16);
                 
-                /*
                 if (sectionNums.containsKey(targetSectionY)) {
                     targetSection = sectionNums.get(targetSectionY);
                     for (int i = targetSectionY + 2; i <= highestSectionY; i++) {
@@ -147,8 +146,8 @@ public class NBTHelper {
                     }
                 }
                 
-                */
-                boolean hasAdd = false; //highestSection.hasKey("Add");
+                
+                boolean hasAdd = highestSection.hasKey("Add");
 
                 if (hasAdd) {
                     add = highestSection.getByteArray("Add");
@@ -163,7 +162,7 @@ public class NBTHelper {
                     blockIndex = y * 16 * 16 + z * 16 + x;
                     short blockID = (short) (blocks[blockIndex] + (hasAdd ? (Nibble4(add, blockIndex)) << 8 : 0));
 
-                    if (ArrayUtils.contains(terrainID, blockID)) {
+                    if (ArrayUtils.contains(terrainID, blockID) && blockID != 0) {
                         topBlockHeight = y;
                         topBlockID = blockID;
                         break;
@@ -180,8 +179,8 @@ public class NBTHelper {
 
                         short belowBlockID = (short) (blocks[belowBlockIndex] + (hasAdd ? (Nibble4(add, belowBlockIndex)) << 8 : 0));
 
-                        if (Arrays.asList(terrainID).contains(topBlockID)
-                                && Arrays.asList(terrainID).contains(belowBlockID)
+                        if (ArrayUtils.contains(terrainID, topBlockID)
+                                && ArrayUtils.contains(terrainID, belowBlockID)
                                 && y != 0) {
                             blocks[belowBlockIndex] = blocks[blockIndex];
                             blocks[blockIndex] = 0;
@@ -203,9 +202,10 @@ public class NBTHelper {
                         Byte normalBlockID_a = exBlockStorage[targetSectionY].getBlockLSBArray()[blockIndex];
                         Byte normalBlockID_b = (exBlockStorage[targetSectionY].getBlockMSBArray() != null ? Nibble4(exBlockStorage[targetSectionY].getBlockMSBArray().data, blockIndex) : 0);
 
-                        if (Arrays.asList(terrainID).contains(topBlockID)
-                                && Arrays.asList(terrainID).contains(aboveBlockID)
+                        if (ArrayUtils.contains(terrainID, topBlockID)
+                                && ArrayUtils.contains(terrainID, aboveBlockID)
                                 && y != 0) {
+                            
                             blocks[aboveBlockIndex] = blocks[blockIndex];
                             blocks[blockIndex] = normalBlockID_a;
                             reverseNibble(add, blockIndex, normalBlockID_b);

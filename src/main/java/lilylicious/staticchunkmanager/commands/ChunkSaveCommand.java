@@ -16,6 +16,7 @@ import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.chunk.storage.RegionFile;
+import net.minecraftforge.common.DimensionManager;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -70,7 +71,7 @@ public class ChunkSaveCommand implements ICommand {
         int chunkZ = MathUtils.floorDiv(blockZ, 16);
         int regionX = MathUtils.floorDiv(chunkX, 32);
         int regionZ = MathUtils.floorDiv(chunkZ, 32);
-        File worldFolder = new File("saves/" + intServ.getFolderName());
+        File worldFolder = new File("saves/" + DimensionManager.getCurrentSaveRootDirectory());
         RegionFile region = new RegionFile(new File(worldFolder, "/region/r." + regionX + "." + regionZ + ".mca"));
 
 

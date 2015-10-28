@@ -7,20 +7,17 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+import org.apache.commons.io.IOUtils;
 
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.util.jar.JarFile;
 
 public class ChunkRequest {
 
     public File file;
     public int cx;
     public int cy;
-    public boolean stream;
     public boolean matchBiomes;
-    public InputStream inStream;
     public boolean matchHeight;
 
     /**
@@ -34,23 +31,24 @@ public class ChunkRequest {
         this.file = file;
         this.cx = x;
         this.cy = y;
-        this.stream = false;
         this.matchBiomes = extras.length > 0 ? extras[0] : false;
         this.matchHeight = extras.length > 1 ? extras[1] : false;
     }
 
-    public ChunkRequest(InputStream is, int x, int y, boolean... extras) {
-        this.inStream = is;
+    public ChunkRequest(InputStream is, int x, int y, boolean... extras) throws IOException {
+        this.file = File.createTempFile(x + "." + y, "chunk");
+        this.file.deleteOnExit();
+        try (FileOutputStream fout = new FileOutputStream(this.file)) {
+            IOUtils.copy(is, fout);
+        }
         this.cx = x;
         this.cy = y;
-        this.stream = true;
         this.matchBiomes = extras.length > 0 ? extras[0] : false;
         this.matchHeight = extras.length > 1 ? extras[1] : false;
     }
 
     public NBTTagCompound readFile() throws IOException {
-        if (stream) return CompressedStreamTools.read(new DataInputStream(inStream));
-        else return CompressedStreamTools.read(file);
+        return CompressedStreamTools.read(this.file);
     }
 
     public Chunk readChunk(World worldObj, Chunk normalChunk) throws IOException {
