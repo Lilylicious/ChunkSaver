@@ -18,6 +18,7 @@ public class ChunkRequest {
     public int cy;
     public boolean stream;
     public boolean matchBiomes;
+    public String streampath;
     public InputStream inStream;
 
     /**
@@ -48,9 +49,21 @@ public class ChunkRequest {
         this.matchBiomes = extras.length > 0 ? extras[0] : false;
     }
 
+    public ChunkRequest(InputStream is, String path, int x, int y, boolean... extras) throws IOException {
+        this.file = File.createTempFile(x + "." + y, "chunk");
+        this.file.deleteOnExit();
+        try (FileOutputStream fout = new FileOutputStream(this.file)) {
+            IOUtils.copy(is, fout);
+        }
+        this.streampath = path;
+        this.cx = x;
+        this.cy = y;
+        this.stream = true;
+        this.matchBiomes = extras.length > 0 ? extras[0] : false;
+    }
+
     public NBTTagCompound readFile() throws IOException {
-        if (stream) return CompressedStreamTools.readCompressed(inStream);
-        else return CompressedStreamTools.read(file);
+        return CompressedStreamTools.read(file);
     }
 
 

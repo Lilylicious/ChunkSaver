@@ -18,9 +18,14 @@ import java.util.Map;
 public class Chunks {
 
     public static Map<Point, ChunkRequest> chunkMap = new HashMap();
+    public static Map<Point, ChunkRequest> worldChunkMap = new HashMap();
 
     public static void addChunk(ChunkRequest cReq) {
         chunkMap.put(new Point(cReq.cx, cReq.cy), cReq);
+    }
+
+    public static void addWorldChunk(ChunkRequest cReq) {
+        worldChunkMap.put(new Point(cReq.cx, cReq.cy), cReq);
     }
 
     public static NBTTagCompound chunkData(int cx, int cy) {
