@@ -7,11 +7,9 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+import org.apache.commons.io.IOUtils;
 
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 public class ChunkRequest {
 
@@ -39,8 +37,12 @@ public class ChunkRequest {
         this.matchBiomes = extras.length > 0 ? extras[0] : false;
     }
 
-    public ChunkRequest(InputStream is, int x, int y, boolean... extras) {
-        this.inStream = is;
+    public ChunkRequest(InputStream is, int x, int y, boolean... extras) throws IOException {
+        this.file = File.createTempFile(x + "." + y, "chunk");
+        this.file.deleteOnExit();
+        try (FileOutputStream fout = new FileOutputStream(this.file)) {
+            IOUtils.copy(is, fout);
+        }
         this.cx = x;
         this.cy = y;
         this.stream = true;
