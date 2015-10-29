@@ -10,7 +10,7 @@ public class csWorldProvider extends WorldProviderSurface {
     @Override
     public IChunkProvider createChunkGenerator()
     {
-        if (terrainType.getWorldTypeName().equals("SavedChunkWorld"))
+        if (this.shouldCreateCP())
         {
             csWorldChunkManager.handleWorldChunks(this.worldObj);
 
@@ -26,6 +26,12 @@ public class csWorldProvider extends WorldProviderSurface {
     public String getFallbackGenerator()
     {
         return "normal";
+    }
+
+    //The world type name may be different in a extending provider
+    public boolean shouldCreateCP()
+    {
+        return terrainType.getWorldTypeName().equals("SavedChunkWorld");
     }
 
 }
