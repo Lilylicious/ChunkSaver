@@ -49,8 +49,12 @@ public class ChunkRequest {
         this.matchBiomes = extras.length > 0 ? extras[0] : false;
     }
 
-    public ChunkRequest(InputStream is, String path, int x, int y, boolean... extras) {
-        this.inStream = is;
+    public ChunkRequest(InputStream is, String path, int x, int y, boolean... extras) throws IOException {
+        this.file = File.createTempFile(x + "." + y, "chunk");
+        this.file.deleteOnExit();
+        try (FileOutputStream fout = new FileOutputStream(this.file)) {
+            IOUtils.copy(is, fout);
+        }
         this.streampath = path;
         this.cx = x;
         this.cy = y;
