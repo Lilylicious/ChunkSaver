@@ -63,8 +63,7 @@ public class ChunkRequest {
     }
 
     public NBTTagCompound readFile() throws IOException {
-        if (stream) return CompressedStreamTools.readCompressed(inStream);
-        else return CompressedStreamTools.read(file);
+        return CompressedStreamTools.read(file);
     }
 
 

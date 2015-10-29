@@ -19,6 +19,11 @@ apply plugin: 'forge'
 apply plugin: 'idea'
 apply plugin: 'java'
 
+compileJava {
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+}
+
 version = "${minecraft_version}-${staticchunkmanager_version}"
 group= "java.lilylicious" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "StaticChunkManager"

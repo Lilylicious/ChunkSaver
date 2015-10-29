@@ -29,7 +29,7 @@ public class csWorldChunkManager {
 
             String fileversion = "v1";
 
-            File worldchunksave = new File(DimensionManager.getCurrentSaveRootDirectory() + "/scmworldchunks.txt");
+            File worldchunksave = new File(world.getSaveHandler().getWorldDirectory() + "/scmworldchunks.txt");
 
             if (worldchunksave.exists()) {
                 loadFinal(worldchunksave);
@@ -121,6 +121,8 @@ public class csWorldChunkManager {
 
                 
             }
+
+            br.close();
 
         } catch (IOException e) {
             e.printStackTrace();
